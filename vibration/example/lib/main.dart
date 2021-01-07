@@ -19,7 +19,13 @@ class VibratingApp extends StatelessWidget {
                   RaisedButton(
                     child: Text('Vibrate for default 500ms'),
                     onPressed: () {
-                      Vibration.vibrate();
+                      Vibration.vibrate(repeat: 0);
+                    },
+                  ),
+                  RaisedButton(
+                    child: Text('Vibrate cancel'),
+                    onPressed: () {
+                      Vibration.cancel();
                     },
                   ),
                   RaisedButton(

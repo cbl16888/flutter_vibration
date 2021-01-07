@@ -3,6 +3,8 @@ import CoreHaptics
 import Flutter
 import UIKit
 
+var isCanceled = false
+
 public class VibrationPluginSwift: NSObject, FlutterPlugin {
     #if targetEnvironment(simulator)
         private let isDevice = false
@@ -146,6 +148,21 @@ public class VibrationPluginSwift: NSObject, FlutterPlugin {
                 return
             }
             
+            if let looping = myArgs["repeat"] as? Int, looping == 0 {
+                isCanceled = false
+                AudioServicesAddSystemSoundCompletion(kSystemSoundID_Vibrate, nil, nil, {
+                                (soundID, inClientData) -> Void in
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+                        if (!isCanceled) {
+                            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+                        }
+                    }
+                            }, nil)
+                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+                result(true)
+                return
+            }
+            
             guard let pattern = myArgs["pattern"] as? [Int] else {
                 AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
                 result(true)
@@ -172,9 +189,13 @@ public class VibrationPluginSwift: NSObject, FlutterPlugin {
             
             result(isDevice)
         case "cancel":
+            isCanceled = true
+            AudioServicesRemoveSystemSoundCompletion(kSystemSoundID_Vibrate);
+            AudioServicesDisposeSystemSoundID(kSystemSoundID_Vibrate)
             result(nil)
         default:
             result(FlutterMethodNotImplemented)
         }
     }
+    
 }
